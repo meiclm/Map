@@ -4,6 +4,7 @@ import com.java.map.model.Paths;
 
 public class DistancePath {
     public Paths paths;
+
     public DistancePath(double[][] data,Paths myPaths){
         int len=myPaths.path.length;
 //        paths=myPaths;
@@ -17,7 +18,6 @@ public class DistancePath {
     }
 
     //返回对象
-
     public Paths getPaths() {
         return paths;
     }

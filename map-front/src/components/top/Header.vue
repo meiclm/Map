@@ -1,7 +1,8 @@
 <template>
     <div style="margin-top:12px ">
       <div id="logo" class="left_box">
-        <div id="logo_box"></div>
+        <div id="logo_box" >
+        </div>
         <!--<span style="">中北</span>-->
       </div>
       <div class="lef_box" style=" height: 95px;width: 75%;overflow: hidden">
@@ -10,37 +11,15 @@
             v-model="value1"
             :data="points_name"
             :filter-method="filterMethod"
-            @keyup.enter="searchPoint"
+            @keyup.enter.native="searchPoint"
             placeholder="输入地名"
             class="my_input"></AutoComplete>
           <Button type="primary" icon="ios-search" class="my_button" @click="searchPoint()">Search</Button>
-          <Button  icon="ios-git-branch" class="my_button" @click="value2 = true">Route</Button>
-            <Modal
-              v-model="value2"
-              title="输入路线"
-              :loading="loading"
-              :styles="{top:'20px'}"
-              @on-ok="asyncOK">
-              <br>
-              起点：<AutoComplete
-              v-model="start_value"
-              :data="points_name"
-              :filter-method="filterMethod"
-              placeholder="输入起名"
-              class="route_value"></AutoComplete>
-              <!--<Input v-model="" placeholder="起始点" autocomplete=""/>-->
-              <br>
-              <br>
-              终点：<AutoComplete
-              v-model="end_value"
-              :data="points_name"
-              :filter-method="filterMethod"
-              placeholder="输入终名"
-              class="route_value"></AutoComplete>
-              <!--<Input v-model="end_value" placeholder="终点"/>-->
-            </Modal>
-            &nbsp; &nbsp;
-          <a href="http://www.nuc.edu.cn/index.htm">中北大学官网</a>
+          <Button  icon="ios-git-branch" class="my_button" @click="setDrawer">Route</Button>
+          <Button  icon="md-close" v-if="block==1" class="my_button" @click="setBlockId">阻塞</Button>
+          <Button  icon="" v-if="block==0" class="my_button" @click="cancelBlock">取消阻塞</Button>
+          <!--&nbsp; &nbsp;-->
+          <!--<a href="http://www.nuc.edu.cn/index.htm">中北大学官网</a>-->
         </div>
 
       </div>
@@ -49,11 +28,10 @@
 </template>
 
 <script>
-  import Axois from 'axios'
+  import axios from 'axios'
   import Store from '../../vuex/store'
-  import Bus from '../../server/bus'
+  import api from '../../server/api'
 
-  import Api from '../../server/api'
     export default {
       name: "Header",
       props:["source_points_length"],
@@ -62,9 +40,11 @@
             value1:'',
             value2:false,
             loading:true,
-            block:-1,
+            block:1,
             start_value:"",
             end_value:'',
+            start:-1,
+            end:-1,
             points_name:["一道门","二道门","三道门","四道门","二龙山","校医院","图书馆"],
             //json对象
             points:[],
@@ -75,19 +55,28 @@
         //获取json文件里的所有不为空的name，整合给points_name[],并且获取json对象
         getPointsName(){
           let that=this;
-          let index=0;
-          Axois.get("static/points.json").then((response)=> {
+          axios.get("static/points.json").then((response)=> {
             if (response.data.Points.length>0){
               that.points=response.data.Points;
               Store.commit("setPoints",response.data.Points);//保存本地文件到公共数据中
               // console.log(that.points.length);//40
               // that.$set(that.points[0],0,response.data.Points[0]);
+              console.log("取到静态资源文件的数据点");
+              that.points_name=[];
               for (var i=0;i<response.data.Points.length;i++) {
                 if (response.data.Points[i].name!="") {
-                  that.points_name[index]=response.data.Points[i].name;
-                  index++;
+                  that.points_name.push(response.data.Points[i].name);
+                  // that.points_name[index]=response.data.Points[i].name;
+                  // index++;
                 }
               }
+            }
+          });
+
+          //获取距离数据，矩阵
+          axios.get(api.getData()).then((response)=>{
+            if (response.data.length>0){
+              Store.commit("setData",response.data);
             }
           });
         },
@@ -109,7 +98,7 @@
           if (this.value1!=""&&this.points.length>0){
             // that.value1=trim(that.value1);
             for (let i=0;i<len;i++){
-              if (this.points[i].name.indexOf(this.value1)>-1){
+              if (this.points[i].name===this.value1){
                 this.muchKeys.push(this.points[i]);
               }
             }
@@ -118,65 +107,30 @@
             this.$emit("muchKeys",this.muchKeys);
           }
         },
+
         //自动补全提示输入框,过滤
         filterMethod(value,option){
-            return option.indexOf(value)!=-1;
+          return option.indexOf(value)!=-1;
         },
-        //查路线
-        asyncOK(){
-          let that=this;
-          let start=-1;
-          let end=-1;
-          let fpath=[];
-          // let allPathsNum=0;
-          //清空search输入框
-          this.value1="";
-          //加载到数据
-          if (this.points!=null){
-            if (that.start_value!=""&&that.end_value!=""&&this.points.length>0){
-              //模糊查询匹配数据
-              let points_length=that.points.length;
-              for (let i=0;i<points_length;i++){
-                if (this.points[i].name.indexOf(that.start_value)>-1) {//匹配起点
-                  start=i;
-                  break;
-                }
-              }
-              for (let i = 0; i <points_length ; i++) {
-                if (this.points[i].name.indexOf(that.end_value)>-1) {
-                  end=i;
-                  break;
-                }
-              }
-
-              if (start>-1&&end>-1) {
-                Axois.get(Api.depth(start, end))
-                  .then(function (response) {
-                    if (response.data != null) {
-                      fpath = response.data;
-                      // allPathsNum = response.data.length;
-                      // console.log("更新一次："+fpath[0].dist)
-
-                      Bus.$emit('fpath', fpath);//传给RoutesDrawer同级组件
-
-                    }
-                  });
-
-              }else {
-                  that.$Message("不能为空！");
-                }
-              }
-            }
-          setTimeout(()=>{
-            that.value2=false;
-          },1500);
-          console.log("传输routes=1给父组件")
-          this.$emit("routes","1");
+        //给父组件MapContent传递drawer=1,显示drawer框
+        setDrawer(){
+          this.$emit("drawer",1);
+        },
+        setBlockId(){
+          this.block=0;
+          this.$emit("blockId",1);
+        },
+        cancelBlock(){
+          this.block=1;
+          this.$emit("blockId",0);
         }
       },
-      created() {
+      mounted() {
         this.getPointsName();//获取json数据，并显示在自动匹配区
-        // console.log(this.points_name);
+        console.log("Header挂载："+this.points_name);
+      },
+      updated(){
+        console.log("Header更新："+this.points_name);
       }
     }
 </script>
@@ -208,7 +162,5 @@ div.left_box{
   .my_button{
     margin: 0 10px;
   }
-  .route_value{
 
-  }
 </style>

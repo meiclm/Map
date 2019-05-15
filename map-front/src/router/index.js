@@ -14,7 +14,13 @@ export default new Router({
     { path: '/', redirect: '/map' },
     {
       path: '/map',
-      component: MapContent
+      component: MapContent,
+      /**
+       * children:[
+       {path:'/info',name:'info',component:UniversityInfo},
+       {path: '/list',name: 'list',component:RoutesList}
+       ]
+       */
     },
   ],
   mode:'history'

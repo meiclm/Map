@@ -80,8 +80,8 @@ public class DepthTraverse {
 //                            path.show();
 //                            paths.addPath(path.elements);
                             onePath=new Paths();
-                            onePath.setPaths(path.elements);//用对象存储
-                            paths.add(onePath);//保存一条路径在
+                            onePath.setPath(path.elements);//用对象存储一条路径
+                            paths.add(onePath);//保存一条路径在多路径集合
 
                             path.pop();
                             path.pop();
@@ -131,13 +131,20 @@ public class DepthTraverse {
 
 //        System.out.println("所有路径的数组：");
 //        paths.showPaths();
+        /**
+         * 得到每条路径的总距离
+         * {
+         *     path：[1，2，3，9，10]
+         *     dist:1235
+         * }
+         */
         for (Paths fpath:paths){
             DistancePath distancePath=new DistancePath(data,fpath);
             fpath=distancePath.getPaths();
         }
     }
 
-    //返回全部的路径
+    //返回两点间的全部的路径
     public List<Paths> getPaths(){
         return paths;
     }

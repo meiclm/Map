@@ -1,14 +1,14 @@
 package com.java.map.model;
 
 public class Paths implements Comparable<Paths> {
-    public int[] path;
-    public double dist;
+    public int[] path;//一条路径
+    public double dist;//该条路径的长度
 
-    public int[] getPaths() {
+    public int[] getPath() {
         return path;
     }
 
-    public void setPaths(int[] path) {
+    public void setPath(int[] path) {
         this.path = path;
     }
 
