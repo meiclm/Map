@@ -16,10 +16,12 @@
             class="my_input"></AutoComplete>
           <Button type="primary" icon="ios-search" class="my_button" @click="searchPoint()">Search</Button>
           <Button  icon="ios-git-branch" class="my_button" @click="setDrawer">Route</Button>
-          <Button  icon="md-close" v-if="block==1" class="my_button" @click="setBlockId">阻塞</Button>
-          <Button  icon="" v-if="block==0" class="my_button" @click="cancelBlock">取消阻塞</Button>
+          <!--<Button  icon="md-close" v-if="block==1" class="my_button" @click="setBlockId">阻塞</Button>-->
+          <!--<Button  icon="" v-if="block==0" class="my_button" @click="cancelBlock">取消阻塞</Button>-->
           <!--&nbsp; &nbsp;-->
-          <!--<a href="http://www.nuc.edu.cn/index.htm">中北大学官网</a>-->
+          <Tooltip content="美食、景色" placement="top-start">
+            <Button @click="goToSceneryAndFood">校园介绍</Button>
+          </Tooltip>
         </div>
 
       </div>
@@ -40,7 +42,7 @@
             value1:'',
             value2:false,
             loading:true,
-            block:1,
+            // block:1,
             start_value:"",
             end_value:'',
             start:-1,
@@ -76,6 +78,7 @@
           //获取距离数据，矩阵
           axios.get(api.getData()).then((response)=>{
             if (response.data.length>0){
+              console.log("获取矩阵数据");
               Store.commit("setData",response.data);
             }
           });
@@ -98,7 +101,7 @@
           if (this.value1!=""&&this.points.length>0){
             // that.value1=trim(that.value1);
             for (let i=0;i<len;i++){
-              if (this.points[i].name===this.value1){
+              if (this.points[i].name.indexOf(this.value1)>-1){
                 this.muchKeys.push(this.points[i]);
               }
             }
@@ -116,13 +119,8 @@
         setDrawer(){
           this.$emit("drawer",1);
         },
-        setBlockId(){
-          this.block=0;
-          this.$emit("blockId",1);
-        },
-        cancelBlock(){
-          this.block=1;
-          this.$emit("blockId",0);
+        goToSceneryAndFood(){
+          this.$router.push({name:'travel'});
         }
       },
       mounted() {

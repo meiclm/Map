@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import MapContent from '../components/MapContent'
-
+import SceneryAndFoolContent from '@/components/dialog/SceneryAndFoolContent'
 
 Vue.use(Router);
 // Vue.use(BMap1,{
@@ -22,6 +22,7 @@ export default new Router({
        ]
        */
     },
+    {path:'/travel',component: SceneryAndFoolContent,name:'travel'}
   ],
   mode:'history'
 })

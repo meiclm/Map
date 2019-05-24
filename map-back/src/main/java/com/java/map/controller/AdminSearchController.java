@@ -58,7 +58,15 @@ public class AdminSearchController {
     public List<Paths> blockResult(@RequestParam("block") int block,@RequestParam("start") int start,
                                    @RequestParam("end") int end){
         List<Paths> newFpath=null;
-        double[][] data=blockPoint(block);//得到被阻塞后的新的数组
+        double[][] data;
+        if(block>-1){
+            data=blockPoint(block);//得到被阻塞后的新的数组
+            System.out.println("阻塞的矩阵");
+        }else{
+            data=getData();
+            System.out.println("正常矩阵");
+        }
+
         int row=data.length;
         int min=-1;
 
@@ -71,7 +79,7 @@ public class AdminSearchController {
             //排序,按照最短路径排序
             Collections.sort(newFpath);
         }
-        System.out.println("查到两点间新的路线");
+//        System.out.println("查到两点间新的路线");
         return newFpath;
     }
     //读取静态资源json文件
